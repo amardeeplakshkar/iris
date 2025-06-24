@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CodeBlock, CodeBlockGroup, CodeBlockCode } from "@/components/ui/code-block";
@@ -11,9 +12,6 @@ import { Check, Copy, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useState } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "sonner";
 
 
@@ -211,6 +209,7 @@ export const renderers = {
     const match = /language-(\w+)/.exec(className || "") || "";
     const codeContent = String(children).replace(/\n$/, "");
     const [copied, setCopied] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const handleCopy = () => {
       navigator.clipboard.writeText(codeContent)
@@ -255,7 +254,7 @@ export const renderers = {
                 <Drawer>
                   <DrawerTrigger className="mt-2" asChild>
                     <Button variant="outline">
-                      <ExternalLink/>
+                      <ExternalLink />
                       Open in IRIS Artifact
                     </Button>
                   </DrawerTrigger>
@@ -263,7 +262,7 @@ export const renderers = {
                     <DrawerTitle className="sr-only">
                       Open in Artifact
                     </DrawerTitle>
-                    <Artifact theme={theme} codeContent={codeContent} fileName="index.html" template="static" />
+                    <Artifact setError={setError} theme={theme} codeContent={codeContent} fileName="index.html" template="static" />
                   </DrawerContent>
                 </Drawer>
               </>
@@ -274,7 +273,7 @@ export const renderers = {
                 <Drawer>
                   <DrawerTrigger className="mt-2" asChild>
                     <Button variant="outline">
-                      <ExternalLink/>
+                      <ExternalLink />
                       Open in IRIS Artifact
                     </Button>
                   </DrawerTrigger>
@@ -282,10 +281,20 @@ export const renderers = {
                     <DrawerTitle className="sr-only">
                       Open in Artifact
                     </DrawerTitle>
-                    <Artifact theme={theme} codeContent={codeContent} fileName="App.js" template="react" />
+                    <Artifact setError={setError} theme={theme} codeContent={codeContent} fileName="App.js" template="react" />
                   </DrawerContent>
                 </Drawer>
               </>
+            }
+            {
+              error && (
+                <Alert>
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )
             }
           </>
         )

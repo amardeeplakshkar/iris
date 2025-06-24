@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { copyToClipboard } from '@/lib/utils'
-import { SandpackCodeEditor, SandpackLayout, SandpackPreview, SandpackProvider } from '@codesandbox/sandpack-react'
+import { SandpackCodeEditor, SandpackLayout, SandpackPreview, SandpackProvider, useSandpack } from '@codesandbox/sandpack-react'
 import { dracula, githubLight } from '@codesandbox/sandpack-themes'
 import { Copy, Download, PlayCircle, StopCircle, Upload, X } from 'lucide-react'
 import React, { useState } from 'react'
@@ -15,9 +15,15 @@ interface ArtifactProps {
   fileName: string;
   template: 'static' | 'react';
   theme: string | undefined
+  setError: (error: string) => void
 }
 
-const Artifact = ({ theme, codeContent, fileName, template }: ArtifactProps) => {
+
+interface DependenciesType {
+  [key: string]: string;
+};
+
+const Artifact = ({ theme, codeContent, fileName, template, setError }: ArtifactProps) => {
   const [preview, setPreview] = useState(false)
 
   const downloadFile = (text: string, filename: string) => {
@@ -39,6 +45,22 @@ const Artifact = ({ theme, codeContent, fileName, template }: ArtifactProps) => 
       return match?.[1] || 'React Artifact'
     }
     return 'IRIS Artifact'
+  }
+
+  function extractDependencies(code = codeContent) {
+    const importRegex = /import\s+([^'";]+)\s+from\s+['"]([^'"]+)['"]/g;
+    const dependencies = new Set();
+  
+    let match;
+    while ((match = importRegex.exec(code)) !== null) {
+      const [fullMatch, importsPart, moduleName] = match;
+      dependencies.add(moduleName);
+    }
+    const dependenciesObj : DependenciesType = {};
+    dependencies.forEach((dep : any) => {
+      dependenciesObj[dep] = 'latest';
+    });
+    return dependenciesObj;
   }
 
   return (
@@ -63,21 +85,26 @@ const Artifact = ({ theme, codeContent, fileName, template }: ArtifactProps) => 
           </Button>
         </div>
       </nav>
-
+    
       <SandpackProvider
         theme={theme === 'dark' ? dracula : githubLight}
         template={template}
         options={{
-          externalResources: template === 'static' ? [] : ["https://cdn.tailwindcss.com"],
+          externalResources: template === 'static' ? [] : ["https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js", "https://kit.fontawesome.com/a076d05399.js"],
         }}
         customSetup={
           template === 'react' ? {
             dependencies: {
-              react: 'latest',
+              ...extractDependencies(),
+              "react": 'latest',
               'react-dom': 'latest',
               'react-scripts': 'latest',
               'tailwindcss': 'latest',
               'lucide-react': 'latest',
+              'framer-motion': 'latest',
+              'class-variance-authority': 'latest',
+              'react-markdown': 'latest',
+              'katex': 'latest',
             },
           } : undefined
         }
@@ -85,6 +112,7 @@ const Artifact = ({ theme, codeContent, fileName, template }: ArtifactProps) => 
           [`/${fileName}`]: codeContent,
         }}
       >
+        <ErrorComponent setError={setError}/>
         <Card className='flex-1 m-0 p-0 gap-0 overflow-y-auto overflow-hidden'>
           <SandpackLayout className='w-full flex-1 grid min-h-[70dvh]!'>
             {preview ?
@@ -100,3 +128,10 @@ const Artifact = ({ theme, codeContent, fileName, template }: ArtifactProps) => 
 }
 
 export default Artifact
+
+const ErrorComponent = ({setError}: { setError: (error: string) => void}) => {
+  const {sandpack} = useSandpack()
+  console.log(sandpack.error?.message)
+  setError(sandpack.error?.message || '')
+  return null
+}

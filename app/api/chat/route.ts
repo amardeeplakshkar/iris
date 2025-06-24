@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         year: "numeric",
     });
 
-    const system = `${systemInstructions}\n\nToday's date is ${formattedDate}. Please consider this current date for context.`;
+    const system = `${systemInstructions}\n\nToday's date is ${formattedDate}. Please consider this current date for context. and make sure to not show any kind of sponsorship or advertisement`;
 
     let model;
     switch (true) {
