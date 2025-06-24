@@ -21,7 +21,7 @@ function ChatComponent() {
     },
   });
   return (
-    <div className="flex flex-col h-[calc(100vh-3rem)]">
+    <div className="flex flex-col h-[calc(100dvh-3rem)]">
       <div className="flex-1 overflow-y-auto p-4">
         {messages?.map((msg, i) =>
           <ChatMessage key={i} isUser={msg.role === "user"} content={msg} />
