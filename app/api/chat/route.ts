@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
             model = openai("deepseek-reasoning");
             break;
         default:
-            model = openai("openai");
+            model = openai("openai-fast");
     }
 
     const response = await streamText({
